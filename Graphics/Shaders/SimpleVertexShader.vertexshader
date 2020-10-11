@@ -1,0 +1,55 @@
+#version 330 core
+
+
+layout(location = 0) in vec3 vertexPosition_modelspace;
+layout(location = 1) in vec3 vertexColor;
+layout(location = 2) in vec2 texCoord;
+layout(location = 3) in vec3 vertexNormal_modelspace;
+
+uniform mat4 trans;
+uniform mat4 projection;
+uniform mat4 view;
+out vec3 pos;
+out vec3 fragColor;
+out vec2 TexCoord;
+out vec3 normal_worldspace;
+out vec3 position_worldspace;
+
+//out vec3 position_worldspace2;
+out vec3 viewspace;
+uniform float t;
+
+uniform int sel;
+void main(){
+
+if(sel==1){
+	fragColor = vertexColor;
+	pos=vertexPosition_modelspace;
+	TexCoord = texCoord;	
+	gl_Position =  projection*view*trans * vec4(vertexPosition_modelspace,1);
+
+	//vec3 posw = vertexPosition_modelspace;	
+	position_worldspace = vec3(trans * vec4(vertexPosition_modelspace,1));
+	//position_worldspace2 = vec3(trans * vec4(vertexPosition_modelspace,1));
+	normal_worldspace = normalize(vec3(trans * vec4(vertexNormal_modelspace,0)));
+	viewspace =vec3(view*trans * vec4(vertexPosition_modelspace,1));
+	
+}
+else if(sel==2){
+vec3 posw = vertexPosition_modelspace;
+	posw.y = posw.y + (sin(t*posw.x) + cos(t*posw.z))*5;
+	fragColor = vertexColor;
+	pos=vertexPosition_modelspace;
+	TexCoord = texCoord;	
+	gl_Position =  projection*view*trans * vec4(posw,1);
+		
+	position_worldspace = vec3(trans * vec4(vertexPosition_modelspace,1));
+	normal_worldspace = normalize(vec3(trans * vec4(vertexNormal_modelspace,0)));
+	viewspace =vec3(view*trans * vec4(vertexPosition_modelspace,1));
+	
+
+//////////////////
+	}
+}
+
+

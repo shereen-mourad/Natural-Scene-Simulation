@@ -1,0 +1,137 @@
+#version 330 core
+
+in vec3 fragColor;
+
+out vec4 color;
+
+in vec2 TexCoord;
+uniform sampler2D myTextureSampler;
+
+uniform sampler2D myTextureSampler2;
+
+uniform sampler2D myTextureSampler3;
+
+uniform sampler2D myTextureSampler4;
+
+uniform sampler2D myTextureSampler5;
+
+uniform sampler2D myTextureSampler6;
+
+in vec3  pos;
+uniform int pos1;
+uniform float mval;
+
+in vec3 position_worldspace;
+in vec3 normal_worldspace;
+
+uniform vec3 LightPosition_worldspace;
+uniform vec3 EyePosition_worldspace;
+uniform vec3 ambientLight;
+uniform vec2 data;
+
+in vec3 viewspace;
+vec4 fogcol=vec4(0.3,0.3,0.3,0);
+float dens=0.05;
+void main()
+{
+     vec3 Il = vec3(1,1,0);
+	 float dist=length(viewspace);
+	 float fogfact=0;
+	 fogfact=1/exp(dist*dens);
+	 fogfact=clamp(fogfact,0.0,1);
+
+	vec4 textureColor = texture( myTextureSampler, TexCoord );
+	
+	vec3 textureColor2 = texture( myTextureSampler2, TexCoord ).rgb;
+	
+	vec3 textureColor3 = texture( myTextureSampler3, TexCoord ).rgb;
+	
+	vec3 textureColor4 = texture( myTextureSampler4, TexCoord ).rgb;
+	
+	vec3 textureColor5 = texture( myTextureSampler5, TexCoord ).rgb;
+	
+	vec4 textureColor6 = texture( myTextureSampler6, TexCoord );
+	
+	vec3 lightVector = normalize(LightPosition_worldspace - position_worldspace);
+	float brightness = dot(lightVector,normal_worldspace);
+	vec3 diffuseLight = vec3(brightness,brightness,brightness);
+	diffuseLight = Il*clamp(diffuseLight,0,1);
+
+	//Specular light calculations.
+	vec3 reflectedLightVector = reflect(-lightVector,normal_worldspace);
+	vec3 eyeDirectionVector = normalize(EyePosition_worldspace - position_worldspace);
+	float specularity = dot(reflectedLightVector,eyeDirectionVector);
+	float specularExponent = data.y;
+	specularity = pow(specularity,specularExponent);
+	vec3 specularLight = vec3(specularity,specularity,specularity);
+	specularLight = Il*clamp(specularLight,0,1);
+
+
+	float d = abs(distance(position_worldspace,LightPosition_worldspace));
+	float r = data.x;
+	float att = 1 - (d/r);
+	
+	if ( att < 0)	
+	att = 0;
+		if(pos1==1)
+		{
+		float h=(pos.y/(255*0.03));
+		float f;
+		if(h<=0.2)
+		{
+				color = vec4(textureColor2*(ambientLight + (diffuseLight + specularLight)*att),1);
+				color=mix(fogcol,color,fogfact);
+		}
+		else if (h>0.2&& h<=0.25)
+		{
+				f=(h-0.2)*20;
+		
+				color =mix(vec4(textureColor2*(ambientLight + (diffuseLight + specularLight)*att),1),vec4(textureColor3*(ambientLight + (diffuseLight + specularLight)*att),1),f);
+			color=mix(fogcol,color,fogfact);
+		}
+		else if (h>0.25&&h<=0.5)
+		{
+		
+				color = vec4(textureColor3*(ambientLight + (diffuseLight + specularLight)*att),1);
+			color=mix(fogcol,color,fogfact);
+		}
+		else if(h>0.5&&h<=0.65)
+		{
+		f=(h-0.5)*20/3;
+		
+				color =mix(vec4(textureColor3*(ambientLight + (diffuseLight + specularLight)*att),1),vec4(textureColor4*(ambientLight + (diffuseLight + specularLight)*att),1),f);
+			color=mix(fogcol,color,fogfact);
+		}
+			else if (h>0.65&&h<=0.85)
+		{
+		
+				color =vec4( textureColor4*(ambientLight + (diffuseLight + specularLight)*att),1);
+			color=mix(fogcol,color,fogfact);
+		}
+		else if(h>0.85&&h<=0.9)
+		{
+				f=(h-0.85)*20;
+		
+				color =mix(vec4(textureColor4*(ambientLight + (diffuseLight + specularLight)*att),1),vec4(textureColor5*(ambientLight + (diffuseLight + specularLight)*att),1),f);
+			color=mix(fogcol,color,fogfact);
+		}
+		else
+			{
+				color =vec4( textureColor5*(ambientLight + (diffuseLight + specularLight)*att),1);
+					color=mix(fogcol,color,fogfact);
+			}
+		}
+		else if(pos1==2)
+		{
+	
+		color = vec4((ambientLight + (diffuseLight + specularLight)*att)*textureColor.rgb,textureColor.a);
+		color=mix(fogcol,color,fogfact);
+		}
+		else if (pos1==3)
+		{
+		
+		color = vec4((ambientLight + (diffuseLight + specularLight)*att)*textureColor6.rgb,0.5);
+		//color=mix(fogcol,color,fogfact);
+		}
+	
+	}
